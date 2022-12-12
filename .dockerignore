@@ -1,0 +1,22 @@
+# Files
+.dockerignore
+.editorconfig
+.gitignore
+.gitattributes
+config.yml
+Dockerfile
+LICENSE
+**/*.md
+**/*_test.go
+*.out
+
+# Folders
+.idea/
+.vscode/
+.git/
+.github/
+bin/
+vendor/
+_deploy/
+_doc/
+data

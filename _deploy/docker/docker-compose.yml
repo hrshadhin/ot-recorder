@@ -1,0 +1,14 @@
+version: "3.5"
+
+services:
+  owntracks-recoder:
+    image: hrshadhin/ot-recoder
+    container_name: owntracks-recoder
+    restart: unless-stopped
+    volumes:
+      - ${PWD}/config.yml:/app/config.yml
+      - ${PWD}/data:/persist # only for sqlite
+    ports:
+      - "8000:8000"
+    environment:
+      - TZ=Asia/Dhaka

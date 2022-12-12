@@ -1,0 +1,41 @@
+name: Integration Test
+on:
+  push:
+    branches: [ 'master' ]
+    paths-ignore: [ '_deploy/**', '_doc/**' ]
+jobs:
+  Test:
+    runs-on: ubuntu-latest
+    env:
+      GO111MODULE: on
+      DB_DATABASE: owntracks_test
+      DB_MYSQL_USER: root
+      DB_MYSQL_PASSWORD: root
+      DB_PGSQL_USER: dev
+      DB_PGSQL_PASSWORD: dev
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up MySQL
+        run: |
+          sudo systemctl start mysql.service
+          mysql -e 'CREATE DATABASE ${{ env.DB_DATABASE }};' -u${{ env.DB_MYSQL_USER }} -p${{ env.DB_MYSQL_PASSWORD }}
+          sed -i 's/toor/root/g' it/mysql/config.yml # override config
+      - name: Set up PostgreSQL
+        run: |
+          sudo systemctl start postgresql.service
+          pg_isready
+          sudo -u postgres psql --command="CREATE USER ${{ env.DB_PGSQL_USER }} PASSWORD '${{ env.DB_PGSQL_PASSWORD }}'" --command="\du"
+          sudo -u postgres createdb --owner=${{ env.DB_PGSQL_USER }} ${{ env.DB_DATABASE }}
+          PGPASSWORD=${{ env.DB_PGSQL_PASSWORD }} psql --username=${{ env.DB_PGSQL_USER }} --host=localhost --list ${{ env.DB_DATABASE }}
+      - name: Setup Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.19
+      - name: Get dependencies
+        run: make dl-deps
+      - name: Run integration test [sqlite]
+        run: make test-integration
+      - name: Run integration test [mysql]
+        run: make test-integration-mysql
+      - name: Run integration test [pgsql]
+        run: make test-integration-pgsql

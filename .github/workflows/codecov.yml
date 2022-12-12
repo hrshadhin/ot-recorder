@@ -1,0 +1,28 @@
+name: Unit Test
+on:
+  push:
+    branches: [ 'master' ]
+    paths-ignore: [ '_deploy/**', '_doc/**' ]
+jobs:
+  Test:
+    runs-on: ubuntu-latest
+    env:
+      GO111MODULE: on
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.19
+      - name: Get dependencies
+        run: make dl-deps
+      - name: Generate coverage report
+        run: make test-unit
+      - name: Upload coverage report
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./coverage.txt
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: true
+          verbose: true

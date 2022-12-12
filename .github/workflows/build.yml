@@ -1,0 +1,22 @@
+name: Build
+on:
+  push:
+    branches: [ 'master' ]
+    paths-ignore: [ '_deploy/**', '_doc/**' ]
+jobs:
+  Build:
+    runs-on: ubuntu-latest
+    env:
+      GO111MODULE: on
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.19
+      - name: Get dependencies
+        run: make dl-deps
+      - name: Build binary
+        run: make build
+      - name: Check binary
+        run: make version

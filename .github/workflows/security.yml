@@ -1,0 +1,19 @@
+name: Security
+on:
+  push:
+    branches: [ 'master' ]
+    paths-ignore: [ '_deploy/**', '_doc/**' ]
+jobs:
+  Gosec:
+    runs-on: ubuntu-latest
+    env:
+      GO111MODULE: on
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run go generate
+        run: go generate ./cmd
+      - name: Run Gosec Security Scanner
+        run: | # https://github.com/securego/gosec/issues/469
+          export PATH=$PATH:$(go env GOPATH)/bin
+          go install github.com/securego/gosec/v2/cmd/gosec@latest
+          gosec ./...

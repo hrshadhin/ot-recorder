@@ -34,7 +34,6 @@ linters:
     - whitespace
 
 issues:
-  # Excluding configuration per-path, per-linter, per-text and per-source
   exclude-rules:
     - path: _test\.go
       linters:

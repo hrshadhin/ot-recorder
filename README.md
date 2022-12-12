@@ -2,8 +2,7 @@
 [![](https://img.shields.io/badge/Go-1.19-00ADD8?style=flat&logo=go)](https://golang.org/doc/go1.19)
 [![build](https://github.com/hrshadhin/ot-recorder/actions/workflows/build.yml/badge.svg)](https://github.com/hrshadhin/ot-recorder/actions?query=workflow%3ABuild)
 [![gosec](https://img.shields.io/github/workflow/status/hrshadhin/ot-recorder/Security?label=%F0%9F%94%91%20gosec&style=flat&color=75C46B)](https://github.com/hrshadhin/ot-recorder/actions?query=workflow%3ASecurity)
-
-[//]: # ([![codecov]&#40;https://codecov.io/gh/hrshadhin/ot-recorder/branch/master/graph/badge.svg?token=N3JVSRO5NZ&#41;]&#40;https://codecov.io/gh/hrshadhin/ot-recorder&#41;)
+[![codecov](https://codecov.io/gh/hrshadhin/ot-recorder/branch/master/graph/badge.svg?token=LCSFDYZZGQ)](https://codecov.io/gh/hrshadhin/ot-recorder)
 [![Go Report Card](https://goreportcard.com/badge/github.com/hrshadhin/ot-recorder)](https://goreportcard.com/report/github.com/hrshadhin/ot-recorder)
 
 Store and access data published by OwnTracks apps in (postgres, mysql or sqlite) via REST API

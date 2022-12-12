@@ -19,7 +19,7 @@ jobs:
         run: |
           sudo systemctl start mysql.service
           mysql -e 'CREATE DATABASE ${{ env.DB_DATABASE }};' -u${{ env.DB_MYSQL_USER }} -p${{ env.DB_MYSQL_PASSWORD }}
-          sed -i 's/toor/root/g' it/mysql/config.yml # override config
+          sed -i 's/dev/root/g' it/mysql/config.yml # override config
       - name: Set up PostgreSQL
         run: |
           sudo systemctl start postgresql.service

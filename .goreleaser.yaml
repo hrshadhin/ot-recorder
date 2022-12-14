@@ -1,0 +1,107 @@
+before:
+  hooks:
+    - go mod download
+    - go generate ./cmd
+
+builds:
+  - id: ot-recorder
+    flags:
+      - -tags=osusergo,netgo,sqlite_omit_load_extension
+    ldflags:
+      - -extldflags=-static
+      - -s -w
+      - -X ot-recorder/app.Version={{.Version}}
+      - -X ot-recorder/app.BuildTime={{.Date}}
+    env:
+      - CGO_ENABLED=1
+    goos:
+      - linux
+    goarch:
+      - amd64
+      - arm64
+      - arm
+    overrides:
+      - goos: linux
+        goarch: arm
+        goarm: "6"
+        env:
+          - CC=arm-linux-gnueabi-gcc
+      - goos: linux
+        goarch: arm64
+        env:
+          - CC=aarch64-linux-gnu-gcc
+      - goos: linux
+        goarch: amd64
+        env:
+          - cc=gcc
+
+checksum:
+  name_template: 'checksums.txt'
+
+snapshot:
+  name_template: "{{ incpatch .Version }}-next"
+
+archives:
+  - name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    files:
+      - LICENSE
+
+changelog:
+  sort: asc
+  use: github
+  filters:
+    exclude:
+      - '^test:'
+      - '^chore'
+      - 'merge conflict'
+      - 'Merge pull request'
+      - 'Merge remote-tracking branch'
+      - 'Merge branch'
+      - 'go mod tidy'
+
+dockers:
+  - image_templates:
+      - "hrshadhin/{{ .ProjectName }}:{{ .Version }}-amd64"
+    dockerfile: Dockerfile_gr
+    use: buildx
+    build_flag_templates:
+      - "--pull"
+      - "--build-arg=BUILD_VERSION={{.Version}}"
+      - "--build-arg=BUILD_TIME={{.Date}}"
+      - "--platform=linux/amd64"
+  - image_templates:
+      - "hrshadhin/{{ .ProjectName }}:{{ .Version }}-arm64"
+    dockerfile: Dockerfile_gr
+    use: buildx
+    build_flag_templates:
+      - "--pull"
+      - "--build-arg=BUILD_VERSION={{.Version}}"
+      - "--build-arg=BUILD_TIME={{.Date}}"
+      - "--platform=linux/arm64"
+    goarch: arm64
+  - image_templates:
+      - "hrshadhin/{{ .ProjectName }}:{{ .Version }}-arm"
+    dockerfile: Dockerfile_gr
+    use: buildx
+    build_flag_templates:
+      - "--pull"
+      - "--build-arg=BUILD_VERSION={{.Version}}"
+      - "--build-arg=BUILD_TIME={{.Date}}"
+      - "--platform=linux/arm/v6"
+    goarch: arm
+
+docker_manifests:
+  - name_template: "hrshadhin/{{ .ProjectName }}:{{ .Version }}"
+    image_templates:
+      - "hrshadhin/{{ .ProjectName }}:{{ .Version }}-amd64"
+      - "hrshadhin/{{ .ProjectName }}:{{ .Version }}-arm64"
+      - "hrshadhin/{{ .ProjectName }}:{{ .Version }}-arm"
+  - name_template: "hrshadhin/{{ .ProjectName }}:latest"
+    image_templates:
+      - "hrshadhin/{{ .ProjectName }}:{{ .Version }}-amd64"
+      - "hrshadhin/{{ .ProjectName }}:{{ .Version }}-arm64"
+      - "hrshadhin/{{ .ProjectName }}:{{ .Version }}-arm"
+
+release:
+  footer: |
+    **Full Changelog**: https://github.com/hrshadhin/ot-recorder/compare/{{ .PreviousTag }}...{{ .Tag }}

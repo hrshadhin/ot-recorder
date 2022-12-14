@@ -30,3 +30,5 @@ config.yml
 data
 it/*.db
 cmd/migrations
+
+dist/

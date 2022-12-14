@@ -11,5 +11,5 @@ sudo chown -R 1000:1000 data
 docker-compose up -d
 
 # run migrations
-docker-compose exec owntracks-recoder /app/ot-recoder migrate up
+docker-compose exec owntracks-recorder /app/ot-recorder migrate up
 ```

@@ -119,7 +119,7 @@ func printBanner() {
 	log.Println("| | | \\ \\ /\\ / / '_ \\| || '__/ _` |/ __| |/ / __| | |_) / _ \\/ __|")
 	log.Println("| |_| |\\ V  V /| | | | || | | (_| | (__|   <\\__ \\ |  _ <  __/ (__ _")
 	log.Println(" \\___/  \\_/\\_/ |_| |_|_||_|  \\__,_|\\___|_|\\_\\___/ |_| \\_\\___|\\___(_)")
-	log.Println("                                                                                    ")
-	log.Printf("          Version: %-18s Build time: %-18s             ", app.Version, app.BuildTime)
+	log.Println("                                                                              ")
+	log.Printf("     Version: %-10s Build time: %-10s", app.Version, app.BuildTime)
 	log.Println("<<=")
 }

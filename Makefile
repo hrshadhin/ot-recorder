@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
 
 BUILD_VERSION := $(shell git describe --always --tags)
-BUILD_TIME=$(shell date '+%Y%m%d-%H%M%S')
-DOCKER_IMAGE_NAME="hrshadhin/ot-recoder"
-BINARY_NAME=ot-recoder
+BUILD_TIME=$(shell date -u +'%Y-%m-%dT%H:%M:%SZ')
+DOCKER_IMAGE_NAME="hrshadhin/ot-recorder"
+BINARY_NAME=ot-recorder
 BIN_OUT_DIR=bin
+GO_VERSION=1.19
 
 export PATH=$(shell go env GOPATH)/bin:$(shell echo $$PATH)
 
@@ -45,7 +46,8 @@ dl-deps: ## Get dependencies
 
 build: clean ## Build binary
 	go generate ./cmd
-	go build -v -ldflags="-w -s -X ot-recorder/app.Version=${BUILD_VERSION} -X ot-recorder/app.BuildTime=${BUILD_TIME}" -o $(BIN_OUT_DIR)/$(BINARY_NAME)
+	go build -v -tags osusergo,netgo,sqlite_omit_load_extension \
+		-ldflags="-extldflags=-static -w -s -X ot-recorder/app.Version=${BUILD_VERSION} -X ot-recorder/app.BuildTime=${BUILD_TIME}" -o $(BIN_OUT_DIR)/$(BINARY_NAME)
 
 version: ## Check binary version
 	./$(BIN_OUT_DIR)/$(BINARY_NAME) --version
@@ -65,7 +67,7 @@ migrate-down: ## Revert migration
 	./$(BIN_OUT_DIR)/$(BINARY_NAME) migrate down
 
 docker-build: ## Build docker image
-	docker build --build-arg BUILD_VERSION=${BUILD_VERSION} --build-arg BUILD_TIME=${BUILD_TIME} --tag ${DOCKER_IMAGE_NAME} .
+	docker build --build-arg GO_VERSION=${GO_VERSION} --build-arg BUILD_VERSION=${BUILD_VERSION} --build-arg BUILD_TIME=${BUILD_TIME} --tag ${DOCKER_IMAGE_NAME} .
 
 docker-push: ## Push docker image
 	docker push
@@ -78,5 +80,5 @@ docker-run: ## Run docker image with sqlite
 		-v $$(pwd)/data:/persist \
 		$(DOCKER_IMAGE_NAME):latest
 
-docker-migrate: ## Run migrations inside dorker
-	docker exec ot-recoder /app/ot-recoder migrate up
+docker-migrate: ## Run migrations inside docker
+	docker exec ot-recoder /app/ot-recorder migrate up

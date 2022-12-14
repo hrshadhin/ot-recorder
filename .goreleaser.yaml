@@ -105,3 +105,10 @@ docker_manifests:
 release:
   footer: |
     **Full Changelog**: https://github.com/hrshadhin/ot-recorder/compare/{{ .PreviousTag }}...{{ .Tag }}
+    ***
+    ```bash
+      docker run --rm --name owntracks-recorder -p 8000:8000 \
+        -v $(pwd)/config.yml:/app/config.yml \
+        -v $(pwd)/data:/persist \
+        hrshadhin/ot-recorder:latest
+    ```

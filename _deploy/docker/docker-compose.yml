@@ -1,7 +1,7 @@
 version: "3.5"
 
 services:
-  owntracks-recoder:
+  owntracks-recorder:
     image: hrshadhin/ot-recorder
     container_name: owntracks-recorder
     restart: unless-stopped

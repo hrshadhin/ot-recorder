@@ -8,6 +8,7 @@ app:
   context_timeout: 2s
   data_path: ./
   time_zone: 'Asia/Dhaka'
+  debug: false
 
 database:
   type: mysql

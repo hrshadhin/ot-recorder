@@ -27,11 +27,12 @@ type PingRequest struct {
 
 func mapLocationRequestToModel(req *PingRequest, headers *http.Header) *model.Location {
 	createdAt := parseEpochTimeToLocal(req.Tst, config.Get().App.TimeZone)
+	createdAtC := model.CustomDateTime(createdAt.Format("2006-01-02 15:04:05"))
 
 	return &model.Location{
 		Username:  headers.Get("x-limit-u"),
 		Device:    headers.Get("x-limit-d"),
-		CreatedAt: createdAt.Format("2006-01-02 15:04:05"),
+		CreatedAt: createdAtC,
 		Acc:       req.Acc,
 		Alt:       req.Alt,
 		Batt:      req.Batt,

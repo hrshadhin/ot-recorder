@@ -6,6 +6,8 @@ import (
 	"ot-recorder/app/response"
 	"ot-recorder/app/validation"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/labstack/echo/v4"
 )
 
@@ -46,8 +48,10 @@ func (u *LocationHandler) Ping(c echo.Context) error {
 		if ok, err := validation.Validate(&pingReq); !ok {
 			valErrors, valErr := validation.FormatErrors(err)
 			if valErr != nil {
+				logrus.Error(valErr)
 				return c.JSON(response.RespondError(response.ErrBadRequest, valErr))
 			}
+			logrus.Error(valErrors)
 
 			return c.JSON(response.RespondValidationError(response.ErrBadRequest, valErrors))
 		}

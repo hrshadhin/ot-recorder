@@ -2,27 +2,51 @@ package model
 
 import (
 	"context"
+	"database/sql/driver"
+	"time"
 )
 
+type CustomDateTime string
+
+func (cdt CustomDateTime) Value() (driver.Value, error) {
+	return string(cdt), nil
+}
+
+func (cdt *CustomDateTime) Scan(value interface{}) error {
+	if t, ok := value.(time.Time); ok {
+		*cdt = CustomDateTime(t.Format("2006-01-02 15:04:05"))
+	} else if t, ok := value.(string); ok {
+		*cdt = CustomDateTime(t)
+	} else if t, ok := value.([]uint8); ok {
+		*cdt = CustomDateTime(t)
+	}
+
+	return nil
+}
+
+func (cdt CustomDateTime) String() string {
+	return string(cdt)
+}
+
 type Location struct {
-	ID        int64   `json:"id"`
-	Username  string  `json:"username"`
-	Device    string  `json:"device"`
-	CreatedAt string  `json:"created_at"`
-	Acc       int8    `json:"acc"`
-	Alt       int8    `json:"alt"`
-	Batt      int8    `json:"batt"`
-	Bs        int8    `json:"bs"`
-	Lat       float64 `json:"lat"`
-	Lon       float64 `json:"lon"`
-	M         int8    `json:"m"`
-	T         string  `json:"t"`
-	Tid       string  `json:"tid"`
-	Vac       int8    `json:"vac"`
-	Vel       int8    `json:"vel"`
-	Bssid     string  `json:"bssid"`
-	Ssid      string  `json:"ssid"`
-	IP        string  `json:"ip"`
+	ID        int64          `json:"id"`
+	Username  string         `json:"username"`
+	Device    string         `json:"device"`
+	CreatedAt CustomDateTime `json:"created_at"`
+	Acc       int8           `json:"acc"`
+	Alt       int8           `json:"alt"`
+	Batt      int8           `json:"batt"`
+	Bs        int8           `json:"bs"`
+	Lat       float64        `json:"lat"`
+	Lon       float64        `json:"lon"`
+	M         int8           `json:"m"`
+	T         string         `json:"t"`
+	Tid       string         `json:"tid"`
+	Vac       int8           `json:"vac"`
+	Vel       int8           `json:"vel"`
+	Bssid     string         `json:"bssid"`
+	Ssid      string         `json:"ssid"`
+	IP        string         `json:"ip"`
 }
 
 type LocationDetails struct {

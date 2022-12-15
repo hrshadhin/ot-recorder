@@ -3,6 +3,8 @@ package middlewares
 import (
 	"ot-recorder/infrastructure/config"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
@@ -19,6 +21,14 @@ func Attach(e *echo.Echo) error {
 	e.Use(middleware.Recover())
 	e.Use(middleware.BodyLimit(cfg.RequestBodyLimit))
 	e.Pre(middleware.RemoveTrailingSlash())
+
+	// only for debug usage
+	if cfg.Debug {
+		e.Use(middleware.BodyDump(func(c echo.Context, reqBody, resBody []byte) {
+			logrus.SetLevel(logrus.DebugLevel)
+			logrus.Debug(string(reqBody))
+		}))
+	}
 
 	return nil
 }

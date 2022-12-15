@@ -16,7 +16,7 @@ func TestCreateLocation(t *testing.T) {
 	l := &model.Location{
 		Username:  "dev",
 		Device:    "phoneAndroid",
-		CreatedAt: nowTime,
+		CreatedAt: model.CustomDateTime(nowTime),
 		Acc:       13,
 		Alt:       -42,
 		Batt:      40,

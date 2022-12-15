@@ -39,6 +39,7 @@ test-integration-pgsql:  ## Run pgsql integration tests
 clean: ## Cleans output directory
 	$(shell rm -rf $(BIN_OUT_DIR)/*)
 	$(shell rm -rf cmd/migrations)
+	$(shell rm -rf dist)
 	$(shell rm -rf ./*.db ./it/*.db coverage.txt _doc/docs.go _doc/swagger.json _doc/swagger.yaml)
 
 dl-deps: ## Get dependencies

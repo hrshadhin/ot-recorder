@@ -64,7 +64,7 @@ func (u *locationUsecase) LastLocation(
 	location = &model.LocationDetails{
 		Username:         l.Username,
 		Device:           l.Device,
-		DateTime:         l.CreatedAt,
+		DateTime:         l.CreatedAt.String(),
 		Accuracy:         l.Acc,
 		Altitude:         l.Alt,
 		BatteryLevel:     fmt.Sprintf("%d%s", l.Batt, "%"),

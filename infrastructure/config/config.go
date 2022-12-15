@@ -25,6 +25,7 @@ type AppConfig struct {
 	IdleTimeout      time.Duration `mapstructure:"idle_timeout"`
 	ContextTimeout   time.Duration `mapstructure:"context_timeout"`
 	Port             int           `mapstructure:"port"`
+	Debug            bool          `mapstructure:"debug"`
 }
 
 // DatabaseConfig DB specific config

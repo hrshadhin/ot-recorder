@@ -12,11 +12,10 @@ import (
 )
 
 func TestCreateLocation(t *testing.T) {
-	nowTime := time.Now().UTC().Format("2006-01-02 15:04:05")
 	l := &model.Location{
 		Username:  "dev",
 		Device:    "phoneAndroid",
-		CreatedAt: model.CustomDateTime(nowTime),
+		CreatedAt: time.Now().Unix(),
 		Acc:       13,
 		Alt:       -42,
 		Batt:      40,
@@ -75,7 +74,7 @@ func TestGetUserLastLocation(t *testing.T) {
 	rows := sqlmock.NewRows([]string{
 		"id", "username", "device", "created_at", "acc", "alt", "batt", "bs", "lat", "lon", "m", "t", "tid", "vac",
 		"vel", "bssid", "ssid", "ip"}).
-		AddRow(1, "dev", "phoneAndroid", time.Now().UTC(), 13, -42, 40, 1, 23.0000000, 90.0000000, 1, "p",
+		AddRow(1, "dev", "phoneAndroid", time.Now().Unix(), 13, -42, 40, 1, 23.0000000, 90.0000000, 1, "p",
 			"p1", 1, 0, "", "", "")
 
 	query := "SELECT \\* FROM locations WHERE username = \\? ORDER BY created_at DESC LIMIT 1"

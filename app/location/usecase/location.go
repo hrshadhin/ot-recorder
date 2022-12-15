@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"ot-recorder/app/model"
 	"ot-recorder/app/response"
+	"ot-recorder/infrastructure/config"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -64,7 +65,7 @@ func (u *locationUsecase) LastLocation(
 	location = &model.LocationDetails{
 		Username:         l.Username,
 		Device:           l.Device,
-		DateTime:         l.CreatedAt.String(),
+		DateTime:         parseEpochTimeToLocal(l.CreatedAt, config.Get().App.TimeZone).Format("2006-01-02 15:04:05"),
 		Accuracy:         l.Acc,
 		Altitude:         l.Alt,
 		BatteryLevel:     fmt.Sprintf("%d%s", l.Batt, "%"),
@@ -80,4 +81,10 @@ func (u *locationUsecase) LastLocation(
 	}
 
 	return location, nil
+}
+
+func parseEpochTimeToLocal(epoch int64, tz string) time.Time {
+	et := time.Unix(epoch, 0)
+	loc, _ := time.LoadLocation(tz)
+	return et.In(loc)
 }

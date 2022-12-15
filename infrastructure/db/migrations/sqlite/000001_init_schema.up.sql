@@ -2,7 +2,7 @@ CREATE TABLE `locations` (
   `id` INTEGER NOT NULL,
   `username` TEXT NOT NULL,
   `device` TEXT NOT NULL,
-  `created_at` TEXT NOT NULL,
+  `created_at` INTEGER NOT NULL,
   `acc` INTEGER,
   `alt` INTEGER,
   `batt` INTEGER,

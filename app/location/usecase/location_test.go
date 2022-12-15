@@ -15,12 +15,11 @@ import (
 
 func TestCreateLocation(t *testing.T) {
 	mockLocationRepo := new(mocks.LocationRepository)
-	nowTime := time.Now().UTC().Format("2006-01-02 15:04:05")
 
 	mockLocation := model.Location{
 		Username:  "dev",
 		Device:    "phoneAndroid",
-		CreatedAt: model.CustomDateTime(nowTime),
+		CreatedAt: time.Now().Unix(),
 		Acc:       13,
 		Alt:       -42,
 		Batt:      40,
@@ -53,12 +52,10 @@ func TestCreateLocation(t *testing.T) {
 
 func TestGetUserLastLocation(t *testing.T) {
 	mockLocationRepo := new(mocks.LocationRepository)
-	nowTime := time.Now().UTC().Format("2006-01-02 15:04:05")
-
 	mockLocation := model.Location{
 		Username:  "dev",
 		Device:    "phoneAndroid",
-		CreatedAt: model.CustomDateTime(nowTime),
+		CreatedAt: time.Now().Unix(),
 		Acc:       13,
 		Alt:       -42,
 		Batt:      40,

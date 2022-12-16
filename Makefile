@@ -76,10 +76,10 @@ docker-push: ## Push docker image
 docker-run: ## Run docker image with sqlite
 	mkdir -p data
 	sudo chown -R 1000:1000 data
-	docker run --name ot-recoder --rm -it -p 8000:8000 \
+	docker run --name ot-recorder --rm -it -p 8000:8000 \
 		-v $$(pwd)/config.yml:/app/config.yml \
 		-v $$(pwd)/data:/persist \
 		$(DOCKER_IMAGE_NAME):latest
 
 docker-migrate: ## Run migrations inside docker
-	docker exec ot-recoder /app/ot-recorder migrate up
+	docker exec ot-recorder /app/ot-recorder migrate up

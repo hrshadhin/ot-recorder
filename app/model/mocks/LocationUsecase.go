@@ -51,6 +51,22 @@ func (_m *LocationUsecase) Ping(c context.Context, l *model.Location) error {
 	return r0
 }
 
+// TelegramHook provides a mock function with given fields: c, req
+func (_m *LocationUsecase) TelegramHook(c context.Context, req *model.TelegramRequest) *model.TelegramResponse {
+	ret := _m.Called(c, req)
+
+	var r0 *model.TelegramResponse
+	if rf, ok := ret.Get(0).(func(context.Context, *model.TelegramRequest) *model.TelegramResponse); ok {
+		r0 = rf(c, req)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*model.TelegramResponse)
+		}
+	}
+
+	return r0
+}
+
 type mockConstructorTestingTNewLocationUsecase interface {
 	mock.TestingT
 	Cleanup(func())

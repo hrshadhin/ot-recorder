@@ -41,6 +41,47 @@ type LocationDetails struct {
 	WifiName         string  `json:"wifi_name,omitempty"`
 	WifiMAC          string  `json:"wifi_mac,omitempty"`
 	IPAddress        string  `json:"ip_address"`
+	MapLink          string  `json:"map_link"`
+}
+
+type TGUSER struct {
+	IsBot     bool   `json:"is_bot"`
+	ID        int64  `json:"id"`
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
+	Username  string `json:"username"`
+}
+
+type TGChat struct {
+	ID        int64  `json:"id"`
+	Type      string `json:"type"`
+	Title     string `json:"title"`
+	Username  string `json:"username"`
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
+}
+
+type TGMessage struct {
+	MessageID       int64  `json:"message_id"`
+	MessageThreadID int64  `json:"message_thread_id"`
+	Date            int64  `json:"date"`
+	Text            string `json:"text"`
+	From            TGUSER `json:"from"`
+	Chat            TGChat `json:"chat"`
+}
+
+type TelegramRequest struct {
+	UpdateID int64     `json:"update_id"`
+	Message  TGMessage `json:"Message"`
+}
+
+type TelegramResponse struct {
+	ChatID                int64  `json:"chat_id"`
+	ReplyToMessageID      int64  `json:"reply_to_message_id"`
+	Method                string `json:"method"`
+	Text                  string `json:"text"`
+	ParseMode             string `json:"parse_mode"`
+	DisableWebPagePreview bool   `json:"disable_web_page_preview"`
 }
 
 type BatteryStatusEnum int
@@ -94,4 +135,5 @@ type LocationRepository interface {
 type LocationUsecase interface {
 	Ping(c context.Context, l *Location) (err error)
 	LastLocation(c context.Context, username string) (location *LocationDetails, err error)
+	TelegramHook(c context.Context, req *TelegramRequest) (message *TelegramResponse)
 }

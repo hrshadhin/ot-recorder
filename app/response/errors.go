@@ -8,6 +8,8 @@ import (
 var (
 	ErrNotFound            = errors.New("resource not found")
 	ErrBadRequest          = errors.New("bad request, check param or body")
+	ErrUnauthorized        = errors.New("invalid token")
+	ErrForbidden           = errors.New("your are not authorized here")
 	ErrUnprocessableEntity = errors.New("can't process request, check param or body")
 	ErrInternalServerError = errors.New("internal server error")
 )
@@ -18,6 +20,10 @@ func getStatusCode(err error) int {
 		return http.StatusNotFound
 	case errors.Is(err, ErrBadRequest):
 		return http.StatusBadRequest
+	case errors.Is(err, ErrUnauthorized):
+		return http.StatusUnauthorized
+	case errors.Is(err, ErrForbidden):
+		return http.StatusForbidden
 	case errors.Is(err, ErrUnprocessableEntity):
 		return http.StatusUnprocessableEntity
 	case errors.Is(err, ErrInternalServerError):

@@ -10,6 +10,11 @@ app:
   time_zone: 'Asia/Dhaka'
   debug: false
 
+hook:
+  telegram:
+    secret_token: secret
+    chat_id: -123
+
 database:
   type: mysql
   host: localhost

@@ -2,9 +2,11 @@ package http
 
 import (
 	"errors"
+	"net/http"
 	"ot-recorder/app/model"
 	"ot-recorder/app/response"
 	"ot-recorder/app/validation"
+	"ot-recorder/infrastructure/config"
 
 	"github.com/sirupsen/logrus"
 
@@ -24,6 +26,9 @@ func NewUserHandler(e *echo.Echo, us model.LocationUsecase) {
 	v1 := e.Group("/api/v1")
 	v1.POST("/ping", handler.Ping)
 	v1.GET("/last-location", handler.LastLocation)
+
+	hooks := e.Group("/hooks")
+	hooks.POST("/telegram", handler.TelegramHook)
 }
 
 func (u *LocationHandler) Ping(c echo.Context) error {
@@ -76,5 +81,38 @@ func (u *LocationHandler) LastLocation(c echo.Context) error {
 	if err != nil {
 		return c.JSON(response.RespondError(err))
 	}
+
+	c.Echo().JSONSerializer = MyJSONSerializer{}
+
 	return c.JSON(response.RespondSuccess("request success", location))
+}
+
+func (u *LocationHandler) TelegramHook(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	botToken := c.Request().Header.Get("X-Telegram-Bot-Api-Secret-Token")
+	if botToken == "" || botToken != config.Get().Hook.Telegram.SecretToken {
+		return c.JSON(response.RespondError(response.ErrUnauthorized))
+	}
+
+	var req model.TelegramRequest
+	err := c.Bind(&req)
+	if err != nil {
+		logrus.Error(err)
+		return c.JSON(response.RespondError(response.ErrUnprocessableEntity))
+	}
+
+	if req.Message.MessageID == 0 { // skip other events like: edited_message, my_chat_member, chat_member
+		return c.JSON(http.StatusOK, map[string]string{})
+	}
+
+	if req.Message.Chat.ID != config.Get().Hook.Telegram.ChatID { // skip non group messages
+		return c.JSON(http.StatusOK, map[string]string{})
+	}
+
+	message := u.LUseCase.TelegramHook(ctx, &req)
+
+	c.Echo().JSONSerializer = MyJSONSerializer{}
+
+	return c.JSON(http.StatusOK, message)
 }

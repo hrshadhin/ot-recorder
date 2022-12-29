@@ -111,3 +111,17 @@ func Ping() {}
 // @Failure	404,500	{object} failedResponse
 // @Router /api/v1/last-location [get]
 func LastLocation() {}
+
+// TelegramHook
+// @Summary Telegram Hook
+// @Description get user last location in telegram via bot
+// @Tags hooks
+// @Param X-Telegram-Bot-Api-Secret-Token header string true "{bot_secret_token}"
+// @Accept json
+// @Param payload body model.TelegramRequest false "Payload [Details Here](https://core.telegram.org/bots/api#update)"
+// @Produce	json
+// @Success	200	{object} model.TelegramResponse
+// @Failure	401 {object} badReqResponse
+// @Failure	422	{object} failedResponse
+// @Router /hooks/telegram [post]
+func TelegramHook() {}

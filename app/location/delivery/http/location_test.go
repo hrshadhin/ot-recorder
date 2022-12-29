@@ -9,6 +9,7 @@ import (
 	"ot-recorder/app/model"
 	"ot-recorder/app/model/mocks"
 	"ot-recorder/app/response"
+	"ot-recorder/infrastructure/config"
 	"strings"
 	"testing"
 	"time"
@@ -47,7 +48,7 @@ func TestPing(t *testing.T) {
 		tempReq := pingReq
 		j, err := json.Marshal(tempReq)
 		assert.NoError(t, err)
-		c, rec := buildEchoRequest(t, endPoint, echo.POST, strings.NewReader(string(j)), true)
+		c, rec := buildEchoRequest(t, endPoint, echo.POST, strings.NewReader(string(j)), true, "")
 
 		handler := lHttp.LocationHandler{
 			LUseCase: mockUsecase,
@@ -63,7 +64,7 @@ func TestPing(t *testing.T) {
 
 		j, err := json.Marshal(tempReq)
 		assert.NoError(t, err)
-		c, rec := buildEchoRequest(t, endPoint, echo.POST, strings.NewReader(string(j)), false)
+		c, rec := buildEchoRequest(t, endPoint, echo.POST, strings.NewReader(string(j)), false, "")
 
 		handler := lHttp.LocationHandler{
 			LUseCase: mockUsecase,
@@ -103,7 +104,7 @@ func TestPingNonPingRequest(t *testing.T) {
 
 		j, err := json.Marshal(tempReq)
 		assert.NoError(t, err)
-		c, rec := buildEchoRequest(t, endPoint, echo.POST, strings.NewReader(string(j)), true)
+		c, rec := buildEchoRequest(t, endPoint, echo.POST, strings.NewReader(string(j)), true, "")
 
 		handler := lHttp.LocationHandler{
 			LUseCase: mockUsecase,
@@ -138,7 +139,7 @@ func TestLastLocationSuccess(t *testing.T) {
 		LUseCase: mockUsecase,
 	}
 
-	ctx, res := buildEchoRequest(t, endPoint+"?username=dev", echo.GET, nil, false)
+	ctx, res := buildEchoRequest(t, endPoint+"?username=dev", echo.GET, nil, false, "")
 	handle := handler.LastLocation
 
 	assert.NoError(t, handle(ctx))
@@ -164,7 +165,7 @@ func TestLastLocationNotFound(t *testing.T) {
 		LUseCase: mockUsecase,
 	}
 
-	ctx, res := buildEchoRequest(t, endPoint+"?username=foobar", echo.GET, nil, false)
+	ctx, res := buildEchoRequest(t, endPoint+"?username=foobar", echo.GET, nil, false, "")
 
 	handle := handler.LastLocation
 	assert.NoError(t, handle(ctx))
@@ -173,12 +174,195 @@ func TestLastLocationNotFound(t *testing.T) {
 	mockUsecase.AssertExpectations(t)
 }
 
+func TestTelegramHook401(t *testing.T) {
+	mockUsecase := new(mocks.LocationUsecase)
+
+	endPoint := BaseURLV1 + "/hooks/telegram"
+	mockReq := &model.TelegramRequest{}
+
+	j, err := json.Marshal(mockReq)
+	assert.NoError(t, err)
+	c, rec := buildEchoRequest(t, endPoint, echo.POST, strings.NewReader(string(j)), false, "")
+
+	handler := lHttp.LocationHandler{
+		LUseCase: mockUsecase,
+	}
+	err = handler.TelegramHook(c)
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusUnauthorized, rec.Code)
+}
+
+func TestTelegramHookSuccess(t *testing.T) {
+	config.LoadTestValues()
+
+	mockUsecase := new(mocks.LocationUsecase)
+
+	mockRes := model.TelegramResponse{
+		ChatID:                1,
+		ReplyToMessageID:      1,
+		Method:                "sendMessage",
+		Text:                  "Username: *dev* ...",
+		ParseMode:             "Markdown",
+		DisableWebPagePreview: true,
+	}
+	mockUsecase.On("TelegramHook", mock.Anything, mock.AnythingOfType("*model.TelegramRequest")).Return(&mockRes)
+
+	endPoint := BaseURLV1 + "/hooks/telegram"
+	mockReq := &model.TelegramRequest{
+		UpdateID: 1,
+		Message: model.TGMessage{
+			MessageID:       1,
+			MessageThreadID: 1,
+			Date:            time.Now().Unix(),
+			Text:            "/loc dev",
+			From: model.TGUSER{
+				IsBot:     false,
+				ID:        1,
+				FirstName: "test",
+				LastName:  "test",
+				Username:  "test",
+			},
+			Chat: model.TGChat{
+				ID:        1,
+				Type:      "private",
+				Title:     "test_group",
+				Username:  "test",
+				FirstName: "test",
+				LastName:  "test",
+			},
+		},
+	}
+
+	j, err := json.Marshal(mockReq)
+	assert.NoError(t, err)
+	c, rec := buildEchoRequest(t, endPoint, echo.POST, strings.NewReader(string(j)), false, "secret")
+
+	handler := lHttp.LocationHandler{
+		LUseCase: mockUsecase,
+	}
+	err = handler.TelegramHook(c)
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusOK, rec.Code)
+
+	var r model.TelegramResponse
+	assert.NoError(t, json.Unmarshal(rec.Body.Bytes(), &r))
+	assert.Equal(t, mockRes.ChatID, r.ChatID)
+	assert.Contains(t, r.Text, "Username: *dev*")
+	mockUsecase.AssertExpectations(t)
+}
+
+func TestTelegramHookSuccessHelp(t *testing.T) {
+	config.LoadTestValues()
+	mockUsecase := new(mocks.LocationUsecase)
+
+	mockRes := model.TelegramResponse{
+		ChatID:                1,
+		ReplyToMessageID:      1,
+		Method:                "sendMessage",
+		Text:                  "/loc<space><username>\n/help - for a list of commands",
+		ParseMode:             "Markdown",
+		DisableWebPagePreview: true,
+	}
+	mockUsecase.On("TelegramHook", mock.Anything, mock.AnythingOfType("*model.TelegramRequest")).Return(&mockRes, nil)
+
+	endPoint := BaseURLV1 + "/hooks/telegram"
+	mockReq := &model.TelegramRequest{
+		UpdateID: 1,
+		Message: model.TGMessage{
+			MessageID:       1,
+			MessageThreadID: 1,
+			Date:            time.Now().Unix(),
+			Text:            "/help",
+			From: model.TGUSER{
+				IsBot:     false,
+				ID:        1,
+				FirstName: "test",
+				LastName:  "test",
+				Username:  "test",
+			},
+			Chat: model.TGChat{
+				ID:        1,
+				Type:      "private",
+				Title:     "test_group",
+				Username:  "test",
+				FirstName: "test",
+				LastName:  "test",
+			},
+		},
+	}
+
+	j, err := json.Marshal(mockReq)
+	assert.NoError(t, err)
+	c, rec := buildEchoRequest(t, endPoint, echo.POST, strings.NewReader(string(j)), true, "secret")
+
+	handler := lHttp.LocationHandler{
+		LUseCase: mockUsecase,
+	}
+	err = handler.TelegramHook(c)
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusOK, rec.Code)
+
+	var r model.TelegramResponse
+	assert.NoError(t, json.Unmarshal(rec.Body.Bytes(), &r))
+	assert.Equal(t, mockRes.ChatID, r.ChatID)
+	assert.Contains(t, r.Text, "/help")
+	mockUsecase.AssertExpectations(t)
+}
+
+func TestTelegramHookSkipEvent(t *testing.T) {
+	config.LoadTestValues()
+	mockUsecase := new(mocks.LocationUsecase)
+
+	endPoint := BaseURLV1 + "/hooks/telegram"
+	mockReq := &model.TelegramRequest{
+		UpdateID: 1,
+		Message: model.TGMessage{
+			MessageID:       1,
+			MessageThreadID: 1,
+			Date:            time.Now().Unix(),
+			Text:            "/help",
+		},
+	}
+
+	t.Run("invalid chat id", func(t *testing.T) {
+		j, err := json.Marshal(mockReq)
+		assert.NoError(t, err)
+		c, rec := buildEchoRequest(t, endPoint, echo.POST, strings.NewReader(string(j)), false, "secret")
+
+		handler := lHttp.LocationHandler{
+			LUseCase: mockUsecase,
+		}
+		err = handler.TelegramHook(c)
+		assert.NoError(t, err)
+		assert.Equal(t, http.StatusOK, rec.Code)
+
+		assert.Equal(t, "{}\n", rec.Body.String())
+	})
+
+	t.Run("invalid message id", func(t *testing.T) {
+		mockReq.Message = model.TGMessage{}
+		j, err := json.Marshal(mockReq)
+		assert.NoError(t, err)
+		c, rec := buildEchoRequest(t, endPoint, echo.POST, strings.NewReader(string(j)), false, "secret")
+
+		handler := lHttp.LocationHandler{
+			LUseCase: mockUsecase,
+		}
+		err = handler.TelegramHook(c)
+		assert.NoError(t, err)
+		assert.Equal(t, http.StatusOK, rec.Code)
+
+		assert.Equal(t, "{}\n", rec.Body.String())
+	})
+}
+
 func buildEchoRequest(
 	t *testing.T,
 	path,
 	method string,
 	payload io.Reader,
 	auth bool,
+	secretToken string,
 ) (echo.Context, *httptest.ResponseRecorder) {
 	e := echo.New()
 	var req *http.Request
@@ -197,6 +381,10 @@ func buildEchoRequest(
 	if auth {
 		req.Header.Set("x-limit-u", "dev")
 		req.Header.Set("x-limit-d", "phoneAndroid")
+	}
+
+	if secretToken != "" {
+		req.Header.Set("X-Telegram-Bot-Api-Secret-Token", secretToken)
 	}
 
 	rec := httptest.NewRecorder()

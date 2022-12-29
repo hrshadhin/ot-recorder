@@ -11,6 +11,7 @@ import (
 type Config struct {
 	App      AppConfig      `mapstructure:"app"`
 	Database DatabaseConfig `mapstructure:"database"`
+	Hook     HooksConfig    `mapstructure:"hook"`
 }
 
 // AppConfig app specific config
@@ -43,12 +44,27 @@ type DatabaseConfig struct {
 	Debug       bool          `mapstructure:"debug"`
 }
 
+type HooksConfig struct {
+	Telegram TelegramHook `mapstructure:"telegram"`
+}
+
+type TelegramHook struct {
+	SecretToken string `mapstructure:"secret_token"`
+	ChatID      int64  `mapstructure:"chat_id"`
+}
+
 // c is the configuration instance
 var c Config //nolint:gochecknoglobals
 
 // Get returns all configurations
 func Get() Config {
 	return c
+}
+
+// LoadTestValues Load test config
+func LoadTestValues() {
+	c.Hook.Telegram.SecretToken = "secret"
+	c.Hook.Telegram.ChatID = 1
 }
 
 // Load the config

@@ -23,6 +23,12 @@ Self-hosted and Google-free location tracking system.
     - [Using Ansible](#ansible)
   - [Setup Mobile APP](#setup-mobile-app)
 - [Grafana Integration](#grafana-integration)
+- [Telegram Integration](#telegram-integration)
+  - [Create Bot](#create-bot)
+  - [Create Group](#create-group)
+  - [Configure Webhook](#configure-webhook)
+  - [Configure OT-recorder](#configure-ot-recorder)
+  - [Test Message](#test-message)
 - [Development](#development)
 - [API's](#api)
 - [Documentation](#docs)
@@ -59,6 +65,11 @@ Self-hosted and Google-free location tracking system.
     data_path: ./data # for sqlite | value must be /persist for docker
     time_zone: 'Asia/Dhaka'
     debug: false
+
+  hook:
+  telegram:
+    secret_token: secret # webhook secret_token
+    chat_id: -123 # group chat id
 
   # For PostgreSQL
   database:
@@ -230,6 +241,58 @@ Self-hosted and Google-free location tracking system.
   ```
 - [Dashboard Json](_doc/grafana-dashboard.json)
 
+## Telegram Integration
+### Create Bot
+- search **@BotFather** bot and start
+- type `/newbot` and follow bot instructions
+- Copy bot token and keep it for later use
+- type `/setprivacy` and `Enable` it
+- type `setcommands` to set commands to the bot
+  ```
+  loc - Get user last location
+  location - Get user last location
+  help - For a list of commands
+  ```
+### Create Group
+- Create group and add bot to this group and other members if needed
+- Now got to **@BotFather** and disable bot setting, so no one can add this bot to other groups
+- type `/setjoingroups` and `Disable` it
+- send a dummy message to the bot `/my_id @my_bot`
+- go to following url: `https://api.telegram.org/botXXX:YYYY/getUpdates` and replace *XXX:YYYY* with your bot token
+- **Look for "chat":{"id":-zzzzzzzzzz,** | `-zzzzzzzzzz` is your `chat_id` (with the negative sign)
+- Testing: You can test sending a message to the group with a curl:
+  ```bash
+  curl -X POST "https://api.telegram.org/botXXX:YYYY/sendMessage" -d "chat_id=-zzzzzzzzzz&text=my sample text"
+  ```
+> If you miss step 4, there would be no update for the group you are looking for
+
+### Configure webhook
+- Set webhook to the bot
+  ```bash
+    CURL -X GET https://api.telegram.org/botXXX:YYYY/setWebhook?url=https://[host]:[port]/hooks/telegram&secret_token=SSSSZZZSSSS
+  ```
+  - Replace `XXX:YYYY` with your bot token
+  - Replace `[host]` & `[port]` with ip or domain
+  - Replace `SSSSZZZSSSS` with `secret_token`. This token is different from your bot token.
+
+### Configure OT-recorder
+- Go to your `config.yml` file
+- Add `secret_token` & `chat_id` in hooks -> telegram section
+- Now restart `ot-recorder` server
+
+### Test Message
+- Go to your telegram group
+- Type `/loc <username>`
+- Examples
+  ```bash
+  /loc @username
+  /location @username
+  /location username
+  /loc@your_bot_name username
+  /location@your_bot_name @username
+  /help
+  ```
+
 ## Development
 - Copy config file `mv _doc/config ./` to root directory and change it
 - Local
@@ -258,11 +321,8 @@ Self-hosted and Google-free location tracking system.
 ## API
 - Location Ping
 - User Last Location
+- Telegram Hook for user last location
 
 ## Docs
 - [ERD](_doc/erd.png)
 - [API documentation](https://hrshadhin.github.io/projects/ot-recorder/swagger.html)
-
-## TO-Do
-- [ ] Telegram Bot for last location check
-- [ ] Reverse geocoding
